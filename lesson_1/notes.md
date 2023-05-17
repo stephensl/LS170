@@ -269,3 +269,20 @@
   - Data does not move directly on the network from start to end point
     - Consists of several hops or journeys between nodes of the network
       - Nodes can be thought of as routers that process data and forward to next node on the path. 
+  - Can run `traceroute google.com` (`tracert` for windows)
+    - returns a list of hops taken for test data to get from machine to Google server. 
+    - values indicate RTT for each hop. 
+  
+
+### Bandwidth 
+  - Varies across network. 
+    - Capacity of core network higher than part of infrastructure that ultimately connects to home or office. 
+    - The bandwidth a connection receives is the lowest amount at a particular point in the overall connection. 
+    - The point at which bandwidth changes from relatively high to relatively low is a bandwidth bottleneck. 
+    - Low bandwidth can be an issue when dealing with large amounts of data
+      - In many situations, latency can be a much more serious limitation on the performance of networked application.
+
+### Limitations of Physical Networks 
+  - The limitations of the physical network limitations can impact the way we utilize and make decisions about higher level protocols within our applications. 
+
+  
