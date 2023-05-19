@@ -286,3 +286,9 @@
   - The limitations of the physical network limitations can impact the way we utilize and make decisions about higher level protocols within our applications. 
 
   
+
+
+## Link / Data Link Layer 
+  - In previous section, discussed physical network being devices connected by cables, transmitting binary data in the form of electrical signals, or radio waves.
+    - Simply connecting them does not allow them to communicate, they must establish *rules* for communication. 
+  - Link / Data Link layer concerned primarily with identification of devices on the physical network and moving data over the physical network between the devices that comprise it such as hosts (computers), switches, and routers. 
