@@ -292,3 +292,45 @@
   - In previous section, discussed physical network being devices connected by cables, transmitting binary data in the form of electrical signals, or radio waves.
     - Simply connecting them does not allow them to communicate, they must establish *rules* for communication. 
   - Link / Data Link layer concerned primarily with identification of devices on the physical network and moving data over the physical network between the devices that comprise it such as hosts (computers), switches, and routers. 
+  - Can think of what happens at this later as an interface between physical network and more logical layers above. 
+
+
+### Ethernet
+  - Most common protocol at Link / Data Link layer
+  - Two most important aspects: 
+    - framing 
+    - addressing 
+
+  ### Ethernet Frames
+    - Ethernet frames are a Protocol Data Unit (PDU), from the Internet/Network layer above. 
+    - Link / Data Link layer is lowest layer at which encapsulation takes place. 
+    - Ethernet Frames are structured data
+      - Remember the Source and Destination MAC address and the Data Payload 
+        - Source and Destination MAC address: 
+          - The next two fields, each six bytes (48 bits) long, are the source and destination MAC addresses. 
+          - The source address is the address of the device which created the frame. 
+          - The destination MAC address is the address of the device for which the data is ultimately intended. MAC Addresses are a key part of the Ethernet protocol.
+        - Data Payload: 
+          - the data payload field can be between 42 and 1497 bytes in length. 
+          - It contains the data for the entire Protocol Data Unit (PDU) from the layer above, an IP Packet for example.
+
+
+    - Interframe Gap (IFG)
+      - brief pause between each frame to allow receiver to prepare for next frame. 
+
+  - In terms of understanding the general function of an Ethernet frame, these differences between standards don't matter too much. The main elements to focus on are the Data Payload field being used as an encapsulation mechanism for the layer above, and the MAC Address fields being used to direct the frame between network devices. These particular fields exist across all the different Ethernet standards.
+
+
+### MAC Addresses
+  - Every network-enabled device is assigned MAC address when manufactured. 
+  - Linked to physical device and referred to as physical or burned-in address.
+  - Formatted as a sequence of six two digit hexadecimal numbers. ex. `00:40:96:9d:68:0a`
+    - Each receiving device would check its MAC address against the destination MAC address in the Frame
+    - If not intended recipient, ignore frame (if using hub). 
+  
+  - Switches direct frames only to the intended device
+    - Keep record of MAC addresses of the devices connected to it. 
+      - Associates each address with the Ethernet port to which device is connected on the switch. 
+        - Information kept in MAC Address Table 
+
+### Scale Problems 
