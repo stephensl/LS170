@@ -334,3 +334,16 @@
         - Information kept in MAC Address Table 
 
 ### Scale Problems 
+  - MAC Addressing system works well for local networks where all the devices are connected to a switch.
+    - In theory, we could conduct inter-network communication just using MAC Addresses
+  - Scale challenges due to: 
+    - MAC Addresses are physical rather than logical.
+    - MAC Addresses are flat, not hierarchical. Entire address is sequence of values, cannot be sub-divided.
+
+
+
+
+
+## Internet / Network Layer 
+  - Primary function is to facilitate communication between hosts (computers) on different networks. 
+  - 
