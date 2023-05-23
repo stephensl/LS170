@@ -346,4 +346,158 @@
 
 ## Internet / Network Layer 
   - Primary function is to facilitate communication between hosts (computers) on different networks. 
-  - 
+  
+### Internet Protocol (IP)
+  - Predominant protocol used at this layer for inter-network communication. 
+  - Two versions of IP in use:
+    - IPv4 
+    - IPv6
+  - Primary features of each: 
+    - Routing capability via IP addressing
+    - Encapsulation of data into packets 
+  
+### Data Packets 
+  - PDU within the IP Protocol referred to as a *packet*
+    - Comprised of Data Payload and Header 
+      - Data Payload of IP packet
+        - PDU from layer above (Transport layer)
+          - Generally a TCP segment or a UDP datagram
+  
+### Header 
+    - Split into logical fields which provide metadata used in transporting packet.
+    - Data in IP Packet is in bits. 
+    - Logical separation of bits into header fields and payload determined by:
+      - Set size of each field in bits
+      - Order within the packet
+
+  - Header Fields 
+    - Version: 
+      - indicates version of the IP used, ex. IPv4
+    - ID, Flags, Fragment Offset: 
+      - related to fragmentation
+      - if Transport layer PDU is too large to be sent as single packet:
+        - fragmented
+        - sent as multiple packets
+        - reassembled by recipient 
+    - TTL (Time to Live): 
+      - Indicates max number of hops packet can take before being dropped
+      - At each hop, router that processes/forwards packet decrements TTL value by 1
+    - Protocol: 
+      - Indicates protocol used for Data Payload
+        - TCP, UDP, etc.
+    - Checksum: 
+      - error checking value generated via an algorithm
+        - destination device generates value using same algo
+          - if value doesn't match, packet is dropped
+            - IP does not manage retransmission of dropped packets, left to layers above.
+    - Source Address: 
+      - 32-bit IP address of the source (sender) of the packet
+    - Destination Address: 
+      - 32-bit IP address of the destination (intended recipient) of the packet
+
+### IP Addresses (IPv4)
+  - Logical in nature, unlike MAC Addresses 
+    - Not tied to specific device
+    - May be assigned as required to devices when join network
+    - IP address assigned to device must be within range of addresses available to the local network that the device is connected to. 
+      - Range is defined by network hierarchy
+        - Overall network is split into logical sub-networks, with each defined by the range of IP addresses available to it
+
+  - IPv4 addresses:
+    - 32 bits in length 
+    - divided into four sections of eight bits each
+    - when converted from binary to decimal, each section provides a range of numbers between 0 and 255.
+      - ex: `109.156.106.57` 
+    - each network defines address at start of range (network address) and end of range (broadcast address)
+      - addresses between network and broadcast can be allocated to individual devices on the network
+    
+    - Network address of range: 
+      - used to identify a specific network segment
+        - A router that wants to forward an IP packet to any address in the range only needs to keep record of which router on the network controls access to the segment with that network address. 
+          - Creates hierarchical structure 
+          - Routers don't need to keep record of every single device within an addressable range.
+      - Sub-netting: 
+        - splitting network into parts
+        - by dividing IP address ranges further, subnets can be split into smaller subnets to create more tiers in hierarchy
+      
+
+### Routing and Routing Tables
+  - All routers on the network store a local routing table.
+    - When IP packet received by router:
+      - router examines destination IP addresses and matches against list of network addresses in routing table
+        - these network addresses define a range of addresses within a particular subnet
+      - The matching network address will determine where in the network hierarchy the subnet exists
+        - This will be used to select best route for IP packet to travel.
+
+  Example: 
+    - A rocket ship is built at a factory
+    - It can't fit in one truck to ship to launch site
+    - Its broken into movable parts and loaded onto multiple trucks
+    - The trucks take the route that makes the most sense at the time based on road conditions
+    - The trucks may not all arrive at once, but once all received, can be assembled correctly
+
+### IPv6
+  - Structure of IPv4 addresses mean maximum of around 4.3 billion addresses.
+  - IPv6 uses 128 bit addresses (eight 16bit blocks)
+    - increases theoretical number of possible addresses to approx 340 undecillion
+
+  - Differs from IPv4
+    - Address structure
+    - Header structure for packets 
+    - Lack of error checking (leaves to Link Layer checksum)
+
+
+### Networked Applications 
+  - Internet Protocol enables communication between two networked devices anywhere in the world.
+  - With networked applications, this is not sufficient.
+    - A single device may have many applications running on it
+      - web browser, email client, etc.
+    - A server may have many services running on it
+      - web server, file server, mail server, etc.
+  - Being able to transport data from one device to another is not sufficient to ensure that a specific application on the client side can access the correct service on the server side. 
+
+
+
+# Summary: Lesson 1
+
+- Internet is a vast network of networks.
+  - Comprised of: 
+    - Network infrastructure
+      - devices, routers, switches, cables, etc.
+    - Protocols 
+      - enable infrastructure to operate 
+
+- Protocols 
+  - Systems of rules governing exchange or transmission of data over network
+  - Different types of protocols are concerned with different aspects of network communication
+    - Useful to think of different protocols operating at particular *layers* of the network
+  
+- Encapsulation
+  - Means by which different protocols at different network layers can work together
+  - Implemented through Protocol Data Units (PDUs)
+  - PDU of protocol at one layer, becomes the data payload of the PDU of a protocol at a lower layer. 
+
+- Physical Network 
+  - Tangible infrastructure that transmits electrical signals, light, radio waves which carry network communications
+
+- Latency
+  - Measure of delay 
+  - Indicates amount of time for data to travel from A to B
+
+- Bandwidth
+  - Measure of capacity
+  - Indicates amount of data that can be transmitted in set period of time
+
+- Ethernet 
+  - Set of standards and protocols that enables communication between devices on a local network
+  - Uses Protocol Data Unit called a *frame*
+  - Uses MAC Addressing to identify devices connected to local network
+
+- Internet Protocol 
+  - Used for inter-network communication
+  - Two versions: 
+    - IPv4 and IPv6
+  - Uses IP Addressing to direct data between one device and another across networks
+  - IP uses a PDU called a *Packet*
+
+  
