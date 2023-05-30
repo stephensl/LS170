@@ -70,3 +70,82 @@
 
 ## Ports 
 A port is an identifier for a specific process running on a host. 
+  - Identifier is an integer in the range 0-65535
+    - Sections of the range are reserved for particular purposes:
+      - 0-1023
+        - Well known ports assigned to processes that provide commonly used network services.
+          - HTTP is port 80 
+          - FTP is port 20 
+          - SMTP is port 25
+      - 1024-49151
+        - Registered ports assigned as requested by private entities
+           - Examples: Microsoft and IBM have ports assigned that they use to provide specific services
+        - On some operating systems, ports in this range are used for allocation as ephemeral ports on the client side
+      - 49152-65535
+        - Dynamic ports (private ports)
+        - Cannot be registered for a specific use.
+        - Can be used for customized services or allocation as ephemeral ports
+
+
+### The source and destination port numbers are included in the PDU for the transport layer. 
+  - The name and exact structure of the PDUs varies according to the Transport Protocol used
+    - All include the source and destination port.
+
+  ### The IP address and the port number together are what enable end-to-end communication between specific applications on different machines.
+    - This combination can be thought of as defining a communication end-point.
+    - This end point is generally referred to as a *socket*.
+
+
+
+### Postal service example: 
+  - Apartment building has street address and numerous apartments within it. 
+  - Mail delivered to apartment is separated by concierge and placed in particular mailbox based on apartment number/name. 
+    - Street address of building is like IP address
+    - Individual apartment numbers are like port numbers
+  - Postal service acts as Internet Protocol and building concierge acts as Transport later protocol (TCP or UDP).
+
+
+
+## Sockets 
+  - Meaning may change depending on the context: 
+    - Conceptually:   
+      - abstraction for an endpoint used for inter-process communication.
+    - Implementation:
+      - UNIX socket
+        - mechanism for communication between local processes running on the same machine.
+      - Internet sockets
+        - TCP/IP socket
+          - mechanism for inter-process communication between networked processes (usually on different machines.)
+
+  - In this course, what we're primarily interested in is the concept of a socket and to a lesser extent the application of this concept for inter-network communication between networked applications, i.e. Internet Sockets. We're not going to look too much into the implementation detail of how Internet Sockets work. One important thing to be clear on though is that there is a distinction between the concept of a network socket and its implementation in code.
+
+  ### Implementation 
+    - Involves instantiating socket objects. 
+    - Sockets implemented as objects helps to understand how they can be used to create connections between applications.
+      - Helps understand difference between connection-oriented communication and connection-less communication. 
+        - Useful in understanding difference between TCP and UDP protocols. 
+
+  
+### Sockets and Connections
+  - Example: 
+    - Attempting to hold 5 separate conversations at once
+    - Other party speaks at will, not waiting to see if listening or not. 
+    
+    - Imagine could replicate self to be totally present for each of 5 conversations
+      - Creating *connection* between self and other participant.
+
+  - This example is a simplified analogy of difference between connection-less and connection-oriented network communication.
+
+    - **By instantiating multiple socket objects we can implement connection-oriented network communication between applications.**
+
+
+- Connectionless 
+  - In a connectionless system we could have one socket object defined by the IP address of the host machine and the port assigned to a particular process running on that machine. That object could call a listen() method which would allow it to wait for incoming messages directed to that particular IP/port pair. Such messages could potentially come from any source, at any time, and in any order, but that isn't a concern in a connectionless system -- it would simply process any incoming messages as they arrived and send any responses as necessary.
+
+- Connection-Oriented
+  - A connection-oriented system would work differently. You could have a socket object defined by the host IP and process port, just as in the connectionless system, also using a listen() method to wait for incoming messages; the difference in implementation would be in what happens when a message arrives. At this point we could instantiate a new socket object; this new socket object wouldn't just be defined by the local IP and port number, but also by the IP and port of the process/host which sent the message. This new socket object would then listen specifically for messages where all four pieces of information matched (source port, source IP, destination port, destination IP). The combination of these four pieces of information is commonly referred to as a four-tuple.
+
+  Any messages not matching this four-tuple would still be picked up by the original socket, which would then instantiate another socket object for the new connection.
+
+
+  - Implementing communication in this way effectively creates a dedicated virtual connection for communication between a specific process running on one host and a specific process running on another host. The advantage of having a dedicated connection like this is that it more easily allows you to put in place rules for managing the communication such as the order of messages, acknowledgements that messages had been received, retransmission of messages that weren't received, and so on. The purpose of these types of additional communication rules is to add more reliability to the communication. 
