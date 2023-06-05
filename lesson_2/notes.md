@@ -57,7 +57,7 @@
       - Examples: 
         - Sending an email while listening to Spotify
         - Load a web-page while chatting in Slack
-    - Different applications or processes can be thought of as distinct channel for communication on a host machine
+    - Different applications or processes can be thought of as distinct *channel* for communication on a host machine
     - With IP addresses we only have a single channel between hosts
 
   - Need a way to transmit multiple data inputs over this single host-to-host channel, then separate them out at the other end. 
@@ -117,7 +117,10 @@ A port is an identifier for a specific process running on a host.
         - TCP/IP socket
           - mechanism for inter-process communication between networked processes (usually on different machines.)
 
-  - In this course, what we're primarily interested in is the concept of a socket and to a lesser extent the application of this concept for inter-network communication between networked applications, i.e. Internet Sockets. We're not going to look too much into the implementation detail of how Internet Sockets work. One important thing to be clear on though is that there is a distinction between the concept of a network socket and its implementation in code.
+  - In this course, what we're primarily interested in is the concept of a socket and to a lesser extent the application of this concept for inter-network communication between networked applications, i.e. Internet Sockets. We're not going to look too much into the implementation detail of how Internet Sockets work. One important thing to be clear on though is that **there is a distinction between the concept of a network socket and its implementation in code.**
+    - Conceptually a socket is a communication end-point defined by Address/Port pair. 
+
+  ### To allow many processes within a single host to use TCP communication simultaneously, the TCP provides a set of addresses or ports within each host. Concatenated with the network and host addresses from the internet communication layer, this forms a socket. 
 
   ### Implementation 
     - Involves instantiating socket objects. 
@@ -140,12 +143,148 @@ A port is an identifier for a specific process running on a host.
 
 
 - Connectionless 
-  - In a connectionless system we could have one socket object defined by the IP address of the host machine and the port assigned to a particular process running on that machine. That object could call a listen() method which would allow it to wait for incoming messages directed to that particular IP/port pair. Such messages could potentially come from any source, at any time, and in any order, but that isn't a concern in a connectionless system -- it would simply process any incoming messages as they arrived and send any responses as necessary.
+  - In a connectionless system we could have one socket object defined by the IP address of the host machine and the port assigned to a particular process running on that machine. 
+  - That object could call a listen() method which would allow it to wait for incoming messages directed to that particular IP/port pair. 
+    - Such messages could potentially come from any source, at any time, and in any order, but that isn't a concern in a connectionless system -- it would simply process any incoming messages as they arrived and send any responses as necessary.
 
 - Connection-Oriented
-  - A connection-oriented system would work differently. You could have a socket object defined by the host IP and process port, just as in the connectionless system, also using a listen() method to wait for incoming messages; the difference in implementation would be in what happens when a message arrives. At this point we could instantiate a new socket object; this new socket object wouldn't just be defined by the local IP and port number, but also by the IP and port of the process/host which sent the message. This new socket object would then listen specifically for messages where all four pieces of information matched (source port, source IP, destination port, destination IP). The combination of these four pieces of information is commonly referred to as a four-tuple.
+  - A connection-oriented system would work differently. 
+  - You could have a socket object defined by the host IP and process port, just as in the connectionless system, also using a listen() method to wait for incoming messages.
+    - the difference in implementation would be in what happens when a message arrives. 
+  - At this point we could instantiate a new socket object; this new socket object wouldn't just be defined by the local IP and port number, but also by the IP and port of the process/host which sent the message. 
+    - This new socket object would then listen specifically for messages where all four pieces of information matched
+      - source port 
+      - source IP
+      - destination port
+      - destination IP
+        - The combination of these four pieces of information is commonly referred to as a *four-tuple*.
 
-  Any messages not matching this four-tuple would still be picked up by the original socket, which would then instantiate another socket object for the new connection.
+  - Any messages not matching this four-tuple would still be picked up by the original socket, which would then instantiate another socket object for the new connection.
 
 
-  - Implementing communication in this way effectively creates a dedicated virtual connection for communication between a specific process running on one host and a specific process running on another host. The advantage of having a dedicated connection like this is that it more easily allows you to put in place rules for managing the communication such as the order of messages, acknowledgements that messages had been received, retransmission of messages that weren't received, and so on. The purpose of these types of additional communication rules is to add more reliability to the communication. 
+  - Implementing communication in this way effectively creates a dedicated virtual connection for communication between a specific process running on one host and a specific process running on another host. 
+  - The advantage of having a dedicated connection like this is that it more easily allows you to put in place rules for managing the communication such as the order of messages, acknowledgements that messages had been received, retransmission of messages that weren't received, and so on. 
+    - The purpose of these types of additional communication rules is to add more reliability to the communication. 
+
+
+
+## Network Reliability
+
+  - The network up to, and including, the Internet Protocol is effectively unreliable as communication channel. 
+    - Protocols such as Ethernet or IP include checksum data as part of header or trailer to test for corruption
+      - If data is corrupt, it is dropped, and no mechanism for replacing lost data.
+        - Possibility of data being lost and not replaced makes network up to IP unreliable. 
+
+  - NEED
+    - system of rules (protocol) for ensuring that all data sent is received at the other end in correct order. 
+
+  ### Building a Reliable Protocol 
+
+    - Version 1: 
+      - Problem: Messages can be corrupt or lost
+        - How can we ensure message has been successfully received?
+      - Solution: Use an acknowledgement message.
+        - Sender sends one message at a time
+        - If message is received, receiver sends an acknowledgement
+        - When acknowledgement is received, sender sends next message. 
+          - Example: 
+            - Two people on phone, giving credit card info
+              - Person A: '3795'
+              - Person B: 'got it' 
+              - Person A: '4632'
+              - Person B: 'yep'
+              - Person A: ...
+      - Flaw: 
+        - Sender may not receive acknowledgement
+          - recipient never receives message, so does not send acknowledgement message
+          - recipient receives, sends acknowledgement, acknowledgement corrupted or lost
+            - Sender will not send next message
+
+    - Version 2: 
+      - Problem: Acknowledgement not received
+      - Solution: re-send the message is acknowledgement not received within certain time-frame.
+      - Rules: 
+        - Sender sends one message at a time, and sets a timeout
+        - If message received, receiver sends acknowledgement
+        - When acknowledgement received, sender sends next message
+          - If acknowledgement not received before timeout expires, sender assumes message or acknowledgement are missing and sends the same message again
+      - Flaw: 
+        - Duplication 
+          - Receiver receives message and sends acknowledgement
+            - Acknowledgement becomes corrupt or lost 
+            - Acknowledgement is delayed and sender doesn't receive before timeout expires
+          - Sender re-sends message that receiver has already received
+            - How would receiver know it is a duplicate?
+
+    - Version 3: 
+      - Problem: message received but acknowledgement is not received or not in time, results in duplicate message.
+      - Solution: add sequence numbers to the message
+      - Rules: 
+        - Sender sends one message at a time with sequence number and sets a timeout
+        - If message received, receiver sends an acknowledgement which uses the sequence number of the message to indicate that it was received
+        - When acknowledgement is received, sender sends next message in sequence
+          - If acknowledgement not received before timeout expires, sender assumes message or acknowledgement are missing, and sends the same message with teh same sequence number. 
+          - If recipient receives a message with a duplicate sequence number, assumes the sender never received the acknowledgment and sends another acknowledgement for that sequence number
+            - Discards duplicate. 
+
+      ### Version 3 provides fundamental elements required for reliable data transfer
+        - In-order delivery
+          - data received in order it was sent
+        - Error detection
+          - corrupt data is identified using a checksum
+        - Handling data loss
+          - missing data retransmitted based on acknowledgements and timeouts
+        - Handling duplication
+          - duplicate data is eliminated through the use of sequence numbers
+
+        ### Limitations at this point
+          - Not efficient: Stop and Wait protocol
+            - Each message sent one at a time
+            - Acknowledgement received before next message is sent
+            - Waiting for acknowledgement is not efficient use of bandwidth
+
+    - Throughput vs Bandwidth 
+      - Throughput 
+        - actual amount of data that is successfully transmitted or processed over a network, system, or device within a given time frame. 
+        - actual flow of water through the pipe
+      - Bandwidth 
+        - describes the theoretical maximum capacity of a network link
+        - water pipe total capacity
+
+  ### Pipelining for Performance
+    - sending multiple messages one after the other without waiting for acknowledgement
+      - Still reliable as acknowledgement still sent, and retransmission can still occur. 
+    - multiple messages are being transferred at any one time. 
+    - Example: 
+      - Non-pipelined
+        - A: 'hey'
+        - B: 'hey back' 
+        - A: 'how are you?'
+        - B: 'good thanks'
+      - Pipelined
+        - A: 'hey'
+             'how are you?'
+        - B: 'hey back'
+             'good thanks'
+
+    - Different ways of implementing pipelined approach:
+      - Go-back-N
+        - the sender maintains a sliding window of messages. The window represents the maximum number of unacknowledged messages that can be in transit at any given time. The sender continues sending messages within the window until it receives acknowledgements for all messages within the window or a timeout occurs. If a timeout occurs, the sender re-sends all unacknowledged messages within the window.
+      
+      - Selective Repeat
+        - This protocol is similar to Go-Back-N but provides more flexibility. The sender maintains a window of messages and waits for acknowledgements individually. If an acknowledgement is not received for a particular message within a timeout period, only that specific message is retransmitted, not all messages within the window.
+      
+      - Both systems the sender will implement a 'window' representing the maximum number of messages that can be in the pipeline at any one time. 
+        - Once it has received appropriate acknowledgements for the messages in this window, it moves the window on, allowing new messages to be sent.
+
+      
+    - Benefits: 
+      - Efficient use of available bandwidth
+        - overlapping the transmission and acknowledgement processes
+        - more time is spent actually transmitting data vs waiting for acknowledgements
+
+    - Balancing:
+      - Finding balance between performance and reliability is a major part of the implementation of the Transmission Control Protocol (TCP). 
+
+
+
