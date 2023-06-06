@@ -288,5 +288,242 @@ A port is an identifier for a specific process running on a host.
 
 
 
-## Transmission Control Protocol 
-  - 
+## Transmission Control Protocol (TCP)
+  - Provides reliable data transfer.
+    - TCP must recover data that is damaged, lost, duplicated, or delivered out of order by the internet communication system.
+  - Provides data encapsulation and multiplexing
+    - Uses TCP segments 
+    
+### Abstraction of data reliability
+  - TCP provides the abstraction of reliable network communication on top of an unreliable channel. 
+    - Hides complexity of reliable network communication from the application layer.
+      - Data integrity
+      - de-duplication 
+      - in-order delivery
+      - re-transmission of lost data
+
+### TCP Segments 
+  -  Segments 
+    - Protocol Data Unit (PDU) of TCP.
+    - Utilizes headers, and payload to provide encapsulation of data from layer above. 
+
+  ### TCP Segment Header
+    - Source Port and Destination Port
+      - Provide multiplexing capability 
+    - CHECKSUM
+      - Error Detection aspect
+      - Sender generates value using algorithm
+      - Receiver generates value using same algo
+      - If do not match, segment is dropped
+      - Makes Checksum at lower layers redundant
+    - Sequence Number and Acknowledgement Number 
+      - Provides for:
+        - In-order delivery 
+        - Handling data loss
+        - Handling duplication 
+    - Window Size 
+      - Related to Flow Control 
+    - Flag Fields 
+      - One-bit boolean fields
+      - URG/PSH 
+        - Related to how data contained in the Segment should be treated in terms of importance/urgency.
+      - SYN, ACK, FIN, RST 
+        - used to establish and end a TCP connection
+        - manages the state of the connection 
+
+### TCP Connections 
+  - TCP is a connection-oriented protocol.
+    - Does not send application data until a connection has been established between application processes.
+  - To establish a connection, TCP uses 3-way handshake.
+    - Sender sends a SYN message. (TCP segment with SYN flag set to 1)
+    - Upon receiving SYN message, receiver sends back a SYN ACK message. (TCP segment with  SYN nad ACK flags set to 1)
+    - Upon receiving the SYN ACK, sender then sends an ACK. (TCP segment with ACK flag set to 1)
+    - Upon sending the ACK, the sender can immediately start sending application data.
+      - The receiver must wait until it has received the ACK before it can send any data back to sender.
+  - This process used to synchronize (SYN) the sequence numbers that will be used during connection. 
+
+  ### Managing Connection State 
+    - Another use for flags is to manage the state of the connection. 
+    - Connection progresses through series of states:
+      - *LISTEN*
+      - SYN-SENT
+      - SYN-RECEIVED 
+      - *ESTABLISHED*
+      - FIN-WAIT-1
+      - FIN-WAIT-2
+      - CLOSE-WAIT
+      - CLOSING
+      - LAST-ACK
+      - TIME-WAIT
+      - Fictional state: CLOSED (no connection exists)
+    - Most concerned with ESTABLISHED and LISTEN on the server side.
+      - Other states are related to establishing and terminating the connection.
+
+  
+  ### 3-way Handshake to Establish a Connection, with Connection States
+
+| Client Start State | Client Action                                             | Client End State | Server Start State | Server Action                                                        | Server End State |
+| ----------------- | -------------------------------------------------------- | ---------------- | ------------------ | -------------------------------------------------------------------- | ---------------- |
+| CLOSED            | Sends a SYN Segment                                       | SYN-SENT         | LISTEN             | Waits for a connection request                                        | -                |
+| SYN-SENT          | Waits to receive an ACK to the SYN it sent, as well as the server's SYN | SYN-SENT   | LISTEN             | Sends a SYN ACK Segment which serves as both its SYN and an ACK for the client's SYN | SYN-RECEIVED     |
+| SYN-SENT          | Receives the SYN ACK Segment sent by the server, and sends an ACK in response. The client is now finished with the connection establishment process | ESTABLISHED | SYN-RECEIVED       | Waits for an ACK for the SYN it just sent                             | -                |
+| ESTABLISHED       | Ready for data transfer. Can start sending application data | ESTABLISHED      | SYN-RECEIVED       | Receives the ACK sent in response to its SYN. The server is now finished with the connection establishment process | ESTABLISHED      |
+
+
+
+### Key Points in 3-way Handshake
+  - Sender cannot send any application data until after it has sent the `ACK` Segment.
+    - There is a round-trip of latency before any application data can be exchanged.
+      - Since this occurs every time a TCP connection is made, impacts any application which uses TCP at Transport Layer.
+  - TCP involves a lot of overhead in establishing connection and providing reliability through retransmission of lost data.
+    - Overhead refers to additional procedures and data that are required to ensure:
+      - reliable
+      - ordered
+      - error-checked delivery
+    - Overhead includes:
+      - establishing connections
+      - retransmitting lost data
+      - controlling flow of data
+      - avoiding network congestion
+  - **Since TCP requires significant overhead in providing its service, it is important that the actual data transmission is as efficient as possible.**
+
+### Flow Control 
+  - Problem: 
+    - Receiver can only process a certain amount of data in a particular time-frame.
+    - If a receiver receives too much data at once, it is stored in a buffer. 
+      - Buffer size depends on amount of memory allocated according to the OS and physical resources available. 
+  - Solution:
+    - Each side of connection lets the other know amount of data it can accept via the `WINDOW` field of the TCP header. 
+      - The `WINDOW` is dynamic and may change during the course of a connection.
+        - If receiver's buffer is getting full, it can set a lower amount in the `WINDOW` field of a Segment sent to the sender.
+          - Sender can then reduce the amount of data it sends accordingly. 
+  - Limitations: 
+    - Although prevents sender from overwhelming the receiver...
+      - Does not prevent sender or receiver from overwhelming the underlying network. 
+        - For this, we need a mechanism for Congestion Avoidance.
+
+### Congestion Avoidance
+  - Occurs when more data being transmitted on the network than its capacity to process and transmit the data. 
+    - Similar to traffic jam, but excess vehicles are simply lost. 
+  - In IP packets moving across network in series of hops:
+    - At each hop, packet is processed
+      - Router at the hop runs checksum
+      - Checks destination address for routing purposes
+    - Routers use buffer to store data awaiting processing, and drops packet if buffer overflows
+  - TCP 
+    - Re-transmits lost data, which may lead to lots of retransmission occurring if network is congested.
+      - In order to avoid excessive re-transmission, TCP uses data loss as feedback mechanism to detect and avoid congestion.
+        - If lots of re-transmissions occurring, TCP interprets congestion and reduces size of transmission window. 
+    - Various approaches and algorithms for determining size of initial transmission window.
+      - Exact implementation dependent on which variant of TCP is being used. 
+
+### Limitations/Disadvantages of TCP
+  - Latency overhead in establishing connection due to Handshake process. 
+  - Head of Line Blocking (HOL)
+    - General networking concept not specific to TCP
+    - Issues in delivering of processing one message in a sequence of messages can delay or block the delivery or processing of subsequent messages in the sequence. 
+    - TCP is vulnerable to this as it provides for in-order delivery of Segments. 
+      - If one segment goes missing, must be retransmitted
+      - Segments that come after cannot be processed until retransmission has occurred
+        - Leads to queuing delays- one of the elements of latency. 
+
+
+
+## User Datagram Protocol (UDP)
+  - PDU known as Datagram 
+  - Encapsulates data from layer above into a payload, then adds header information.
+
+  ### UDP Headers
+    - 4 fields
+      - Source Port 
+      - Destination Port 
+      - UDP Length (length in bits of Datagram, including any encapsulated data)
+      - Checksum field for error detection.
+        - Optional if using IPv4 at the Network layer
+        - IPv6 must include Checksum in Datagram since IPv6 packets do not include one themselves.
+
+  ### UDP vs TCP 
+    - Similarities: 
+      - Both provide multiplexing in the same way through use of Source and Destination Port numbers. 
+    - Differences:
+      - Connectionless protocol. 
+      - Does not address unreliability of layers below it.
+      - No guarantee of message delivery. 
+      - No guarantee of message delivery order.
+      - No built-in Congestion Avoidance.
+      - No built-in Flow Control 
+      - No connection state tracking (connectionless).
+
+    ### Why use UDP?
+      - Simplicity 
+        - Provides speed and flexibility.
+      - Connectionless
+        - Applications using UDP at Transport layer can start sending data without waiting for connection to be established. 
+        - Lack of acknowledgement means faster data delivery.
+          - Reduced latency without acknowledgement data.
+      - No in-order delivery
+        - Removes HOL issue (at least at Transport layer)
+      - Flexibility 
+        - Engineer can decide services and implementation based on use-case
+          
+      
+      - Examples: 
+        - Want in-order delivery but not worried about occasional piece of lost data.
+          - Implement sequencing, but not re-transmission. 
+          - Services can be implemented at Application layer, using UDP as a *base template* to build on. 
+        - Voice or Video Calling Application 
+          - Occasional piece of lost data may result in small glitch or missing pixel
+            - tradeoff of speed vs complete data reliability.
+        - Gaming 
+          - small glitch preferred over lag-time. 
+    
+
+    **UDP provides increased flexibility and freedom to developers, but various best-practices should be adhered to.** 
+      - Example: 
+        - UDP-based application should provide some form of congestion avoidance in order to prevent overwhelming network. 
+
+
+## Summary 
+
+  - Multiplexing/Demultiplexing 
+    - provide for transmission of multiple signals over a single channel.
+    - enabled through use of network ports. 
+  
+  - Network Sockets
+    - combination of IP address and Port Number 
+    - at implementation level, network sockets can also be *socket objects*. 
+  
+  - Underlying Network Unreliable
+    - if we want reliable data transfer, must implement a system of rules to enable it. 
+  
+  - Transmission Control Protocol (TCP)
+    - connection-oriented protocol. 
+    - establishes connection using 3-way handshake.
+
+
+  - TCP provides reliability through:
+      - message acknowledgement 
+      - retransmission 
+      - in-order delivery 
+    
+  - TCP provides Flow Control and Congestion Avoidance.
+
+  - TCP Limitations 
+    - latency overhead in establishing connection.
+    - potential Head-of-Line Blocking (HOL) as result of in-order delivery. 
+
+  - User Datagram Protocol (UDP)
+    - connectionless 
+    - very simple compared to TCP
+    
+  - UDP Positives
+    - provides multiplexing
+    - provides speed and flexibility 
+
+  - UDP Tradeoffs 
+    - no reliability 
+    - no in-order delivery 
+    - no flow control 
+    - no congestion avoidance
+
+
