@@ -417,6 +417,12 @@ A port is an identifier for a specific process running on a host.
     - Various approaches and algorithms for determining size of initial transmission window.
       - Exact implementation dependent on which variant of TCP is being used. 
 
+### Congestion Avoidance vs Flow Control 
+  - Congestion avoidance
+    - Managing rate of data transmission to prevent the network as a whole from being overloaded.
+  - Flow Control 
+    - Managing the rate of data transmission between sender and receiver to prevent the receiver from being overwhelmed. 
+
 ### Limitations/Disadvantages of TCP
   - Latency overhead in establishing connection due to Handshake process. 
   - Head of Line Blocking (HOL)
@@ -445,6 +451,7 @@ A port is an identifier for a specific process running on a host.
   ### UDP vs TCP 
     - Similarities: 
       - Both provide multiplexing in the same way through use of Source and Destination Port numbers. 
+      - Both provide error detection CHECKSUM
     - Differences:
       - Connectionless protocol. 
       - Does not address unreliability of layers below it.
