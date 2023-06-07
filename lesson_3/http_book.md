@@ -179,3 +179,147 @@
     - `,`
   - Reserved characters being used for reserved purpose
     - otherwise must be encoded. 
+
+
+## Making HTTP Requests 
+
+### Chrome Tools 
+  - Method column 
+    - Information displayed here known as the HTTP Request Method
+      - This is the verb that tells server what action to perform on a resource. 
+        - GET and POST are most common. 
+          - GET
+            - Retrieving information
+            - Most commonly used
+  - Status column 
+    - Every request gets a response (unless the request times out)
+    - Response is given, even if response is error. 
+
+### GET Requests
+  - Initiated by clicking on link or via address bar of browser.
+    - Default behavior of link is to issue GET request to a URL. 
+  - GET requests are used to retrieve a resource. 
+  - The response from a GET request can be anything, but if HTML and HTML references other resources...
+    - Browser automatically requests those referenced resources
+      - A pure HTTP tool will not. 
+
+### POST Requests 
+  - HTTP method used when...
+    - want to initiate some action on the server
+    - send data to a server 
+  - Allows sending much larger and sensitive data to the server.
+    - Images
+    - Videos
+  - Example: sending username/password to server for authentication
+    - GET request and send through query string
+      - Would expose sensitive info in URL.
+    - Use POST request in a form. 
+      - Does not have same size limitations of GET request query strings.
+
+  **How are we sending data to the server since not through URL?**
+    - Through the HTTP body
+      - Body contains data being transmitted in an HTTP message
+        - Optional
+        - May send HTTP messages with empty body
+      - Body can contain HTML, images, audio, etc. 
+        - Body is like the letter, enclosed in an envelope, to be posted. 
+    
+    - The POST request  is the same as...
+      - Filling out form in browser
+      - Submitting form
+      - Being redirected to next page
+        - How to know where?
+          - Included in Location HTTP response header from server.
+            - Browser sees Location header and automatically issues new, unrelated request to the specified URL
+
+  **Key Points**
+    - Browser hides a lot of underlying HTTP request/response cycle
+      - Browser initiated the initial POST request
+      - Browser received response with Location header
+        - Issued another request without action from user
+        - Displayed response from second request. 
+      - Pure HTTP tool does not issue next request automatically, while browser does. 
+
+    
+
+### HTTP Headers 
+  - Allow client and server to send additional information during HTTP Request/Response cycle. 
+  - Syntactically written as colon-separated name:value pairs in plain text. 
+
+#### Request Headers 
+  - Give more information about client and resource to be fetched.
+  - Part of request sent to server.
+    - Host
+      - Domain name of the server
+        - Ex. Host:www.reddit.com 
+    - Accept-Language 
+      - List of acceptable languages 
+        - Ex. Accept-Language:en-US,en;q=0.8
+    - User-Agent
+      - String that identifies the client
+        - ex. User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36
+    - Connection 
+      - Type of connection the client would prefer.
+        - Ex. Connection:keep-alive
+        
+### Most important components of HTTP request: Method, Path, Header, Body (MPHB)
+  - Method
+    - Indicates desired action to be performed on the specified resource.
+    - Most common
+      - GET (retrieve a resource)
+      - POST (send data to server)
+    - Others
+      - DELETE (delete a resource)
+      - HEAD (retrieve resource metadata)
+  
+  - Path 
+    - resource name and any query parameters
+      - Specific URL being requested 
+      - Any query parameters as additional data appended to URL
+
+  - Header
+    - Provide additional context or information about the request or the client. 
+
+  - Body 
+    - For POST requests
+      - The data being sent to the server.
+
+
+
+## Processing Responses
+  - Raw data returned by the server is the *response*.
+
+### Status Code
+  - Three digit number that server sends back after receiving a request
+    - Signifies status of request
+  - Common Status Codes
+    - 200 
+      - OK
+      - Request handled successfully
+    - 302
+      - Found 
+      - The requested resource has changed temporarily
+        - Usually results in redirect to another URL
+    - 404 
+      - Not Found
+      - Requested resource could not be found.
+    - 500
+      - Internal Server Error
+      - The server encountered a generic error
+
+
+  #### 302 Found
+    - When resource is moved...
+      - Most common strategy is to *redirect*, re-routing request to new URL.
+      - When browser sees response status code 302...
+        - knows resource has been moved
+        - automatically follow new re-routed URL in `Location` response header.
+
+    ##### Redirect workflow example:
+      - Visiting github.com/settings/profile 
+        - In order to access profile, must first be signed in
+          - If not signed in, browser directs you to a page to do so.
+        - After credentials entered, redirected to original page trying to access.
+
+        
+
