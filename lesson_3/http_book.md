@@ -320,6 +320,210 @@
         - In order to access profile, must first be signed in
           - If not signed in, browser directs you to a page to do so.
         - After credentials entered, redirected to original page trying to access.
+      - HTTP tool does not automatically follow the redirect.
+        - If we look at Location in response header using HTTP tool
+          - Same address as in address bar when redirected in browser.
+      
+  #### 404 Not Found 
+    - Returned by server when the requested resource cannot be found. 
+      - Browser will likely show default 404 page from site. 
+      - HTTP tool will show raw response with the status code.
+    
+  #### 500 Internal Server Error 
+    - Problem on the server side
+      - Can be shown in variety of ways, similar to 404 page. 
 
-        
 
+
+### Response Headers 
+  - Offer additional meta-information about response being sent back to client. 
+    - Content-Encoding: 
+      - type of encoding used on the data
+        - Content-Encoding:gzip 
+    - Server:
+      - name of the server 
+        - Server:thin 1.5.0 codename Knife 
+    - Location: 
+      - notify client of new resource location 
+        - Location:https://github.com/login
+    - Content-Type
+      - contains the type of data contained in the response 
+        - Content-Type:text/html;charset=UTF-8
+
+  - Response headers have subtle effects on:
+    - Data being returned
+    - Workflow 
+      - Ex. browser automatically following a `Location` in response header. 
+
+
+### Summary Key Points 
+  - HTTP is an agreement in the form of formatted text.
+    - Dictates how a client and server communicate. 
+  - Most important parts of HTTP response:
+    - Status codes (200, 302, 404, 500)
+    - Headers 
+      - Contains additional meta-data regarding response.
+    - Message body
+      - Contains raw response data
+
+
+
+
+## Stateful Web Applications 
+  - HTTP is stateless
+    - Server does not store information between each request/response cycle.
+    - Each request made to a resources is treated as new entity.
+    - Different requests are not aware of each other. 
+  - Benefits of statelessness
+    - Distributed
+    - Resistant to control 
+  - Limitations
+    - Difficulty in building stateful web applications
+
+### Stateful appearance
+  - When we log into twitter...
+    - see username at top, signifying authenticated status
+    - click around, which generates new requests to twitter's servers
+      - we are not suddenly logged out
+      - the server response contains HTML that shows our username
+      - application seems to maintain its state
+  - How is this accomplished if HTTP is stateless?
+    - Sessions
+    - Cookies 
+    - Asynchronous JavaScript calls, or AJAX
+    - 4th approach no longer used:
+      - sending stateful data as query parameters when making request
+
+
+  ### A Stateful App
+    - Twitter homepage
+    - Login 
+    - Notice username at top, showing authenticated status
+    - Refresh page
+    - Still logged in
+  - How does the server know to remember my username and dynamically display it on the page even after sending new request?
+    - HTTP protocol is being augmented to maintain a sense of statefulness. 
+    - With help from client (browser) HTTP can be made to act as if it were maintaining stateful connection with server.
+
+### How is this accomplished?
+  
+  #### Sessions
+  - Having the server send some form of unique token to the client.
+    - Whenever client makes a request to the server, client appends this token as part of request.
+      - Allows for server to identify clients
+  - Session Identifier: 
+    - unique token that is passed back and forth
+    - passing `session id` between client and server creates sense of persistent connection between requests.
+      - each request, however, is technically stateless and unaware of the previous or next one.
+  
+    ##### Consequences 
+      - Each request must be inspected to see if contains session identifier
+        - If so, server must check to ensure session id is still valid
+          - server must maintain some rules regarding session expiration and session data storage
+      - Server must retrieve the session data based on the session id
+      - Server must recreate the application state (HTML for a web request) from the session data
+        - Send back to client as the response
+
+      **server must work very hard to simulate stateful experience**
+
+  #### Cookies 
+    - One common way to store session information
+    - Piece of data sent from server and stored in client during request/response cycle.
+      - Small files stored in the browser and contain the session information.
+  
+  ##### How Cookies work
+      - When visiting website for first time...
+        - server sends session information and sets it in browser cookie on local computer.
+        - actual session data is stored on the server
+      - On each request...
+        - client side cookie compared with server-side session data to identify current session.
+        - when visit same webpage again, session will be recognized because of stored cookie with its associated information.
+      - With session id sent with every request, server can now uniquely identify this client.
+        - when server receives request with session id
+          - server looks for associated data based on that id
+          - in the associated session data is where server "remembers" state for that session id. 
+
+  **Key Point on Cookies**
+    - `session id` stored on client
+      - used as a key to session data stored on server side
+    - `session id` is unique and expires in relatively short time
+      - required to login again after session expires
+      - `session id` is deleted upon logout
+    - To summarize: 
+      - session data is generated and stored on the server-side
+      - `session id` is sent to the client in form of a cookie
+      - client uses session id as part of request as key for server to access session data. 
+
+
+  ### Asynchronous JavaScript and XML (AJAX)
+    - Allows browsers to issue requests and process responses *without a full page refresh*.
+    - When AJAX is used, all requests sent from client are performed asynchronously
+      - Page does not refresh.
+    - Utilizes `callbacks` 
+      - piece of logic passed on to a function to be executed after a certain event has happened.
+  - KEY POINTS ABOUT AJAX
+    - just like normal requests
+      - sent to server with all normal components of an HTTP request, and server handles them like any other request.
+        - Difference is that instead of browser refreshing and processing the response...
+          - response is processed by a callback function, usually client-side JavaScript code. 
+    
+
+    
+
+    
+## Security 
+  - HTTP is difficult to control, but also difficult to secure.
+    - stealing session id
+    - looking at cookies
+    - etc
+
+  - Secure HTTP (HTTPS)
+    - client and server send requests/responses as strings
+      - if attacker was attached to same network, could use *packet sniffing* techniques to read messages.
+      - requests contain session id, so if copied, could craft request to server and pose as my client and be automatically logged in without needing to even access username and password. 
+    - HTTPS
+      - every request/response is encrypted before being transported on the network. 
+      - uses cryptographic protocol called TLS (Transport Layer Security)
+        - earlier versions of HTTPS used SSL (Secure Sockets Layer)
+      - cryptographic protocols use certificates to communicate with remote servers and exchange security keys before encryption happens. 
+  
+  - Same Origin Policy 
+    - permits unrestricted interaction between resources originating from the same origin
+      - Origin refers to combination of scheme, host, and port.
+    - restricts certain interactions between resources originating from different origins. 
+  - Cross-origin Resource Sharing (CORS)
+    - mechanism allowing for interactions that would normally be restricted cross-origin to take place.
+      - Works by adding new HTTP headers, that allow servers to serve resources cross-origin to certain specified origins.
+
+  - Session Hijacking 
+    - if an attacker gets a hold of the session id, both the attacker and the user now share the same session and both can access the web application. In session hijacking, the user won't even know an attacker is accessing his or her session without ever even knowing the username or password.
+
+  **Countermeasures for Session Hijacking**
+
+    - One popular way of solving session hijacking is by resetting sessions. With authentication systems, this means a successful login must render an old session id invalid and create a new one. With this in place, on the next request, the victim will be required to authenticate. At this point, the altered session id will change, and the attacker will not be able to have access. Most websites implement this technique by making sure users authenticate when entering any potentially sensitive area, such as charging a credit card or deleting the account.
+
+    - Another useful solution is setting an expiration time on sessions. Sessions that do not expire give an attacker an infinite amount of time to pose as the real user. Expiring sessions after, say 30 minutes, gives the attacker a far narrower window to access the app.
+
+    - Finally, as we have already covered, another approach is to use HTTPS across the entire app to minimize the chance that an attacker can get to the session id.
+
+
+  - Cross Site Scripting (XSS)
+    - This type of attack happens when you allow users to input HTML or JavaScript that ends up being displayed by the site directly.
+    - If the server side code doesn't do any sanitization of input, the user input will be injected into the page contents, and the browser will interpret the HTML and JavaScript and execute it. 
+    - Example:
+      - an attacker can use JavaScript to grab the session id of every future visitor of this site and then come back and assume their identity. It could happen silently without the victims ever knowing about it. Note that the malicious code would bypass the same-origin policy because the code lives on the site.
+
+  - Potential solutions for cross-site scripting
+
+    - One way to prevent this kind of attack is by making sure to always sanitize user input. This is done by eliminating problematic input, such as <script> tags, or by disallowing HTML and JavaScript input altogether.
+
+    - The second way to guard against XSS is to escape all user input data when displaying it. If you do need to allow users to input HTML and JavaScript, then when you print it out, make sure to escape it so that the browser does not interpret it as code.
+
+- Escaping
+
+  - To escape a character means to replace an HTML character with a combination of ASCII characters, which tells the client to display that character as is, and to not process it; this helps prevent malicious code from running on a page. These combinations of ASCII characters are called HTML entities.
+
+-  Consider the following HTML: `<p>Hello World!<\p>`. 
+  - Let's say we don't want the browser to read this as HTML. 
+    - To accomplish this, we can escape special characters that the browser uses to detect when HTML starts and ends, namely < and >, with HTML entities. 
+    - If we write the following: `&lt;p&gt;Hello World!&lt;\p&gt;`, then that HTML will be displayed as plain text instead.
