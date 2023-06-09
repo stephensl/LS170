@@ -340,4 +340,58 @@
 
 
 ## Working with netcat 
-  
+  - network utility for reading and writing data across network connections using TCP or UDP. 
+
+
+### Practicing setting up HTTP server
+```bash
+
+#!/bin/bash
+
+# define function called server
+
+function server () {
+
+}
+
+
+# set up coprocess
+
+# allows us to run server function asynchonously alongside our nc command.
+
+# naming process SERVER_PROCESS and telling it to execute server function.
+
+coproc SERVER_PROCESS { server; }
+
+
+
+
+# executing nc command.
+
+# executes nc in listen and verbose mode, and sets it to listen for incoming connections on port 2345. 
+
+# After port number is redirection of STDOUT and STDIN.
+
+# Input nc receives can be accessed within the server function using the read command. 
+
+# Any output from server function will be output by nc. 
+nc -lv 2345 <&${SERVER_PROCESS[0]} >&${SERVER_PROCESS[1]}
+```
+
+
+
+
+## Summary 
+  - HTTP is a *text-based* protocol. 
+    - HTTP request/response involve sending text between client and server. 
+
+  - In order for protocol to function correctly...
+    - Request and Response must be structured in a way that client and server understand. 
+
+  - HTTP/1.1 the end of the headers is indicated by an *empty line* 
+
+  - The `Content-Length` header can be used to indicate the size of the body. 
+    - This helps determine where the HTTP message should end. 
+
+
+    
